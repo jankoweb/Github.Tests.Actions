@@ -55,6 +55,13 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git add TODO.md
           git commit -m "Update TODO.md with latest TODO and FIXME comments" || echo "No changes to commit"
-          git push --force
+          git push --force --set-upstream origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Debug Git Status
+        run: |
+          git status
+          git remote -v
+
+
