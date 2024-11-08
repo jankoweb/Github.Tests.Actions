@@ -37,7 +37,7 @@ jobs:
                 line_number=$(echo "$line" | cut -d':' -f2)
                 content=$(echo "$line" | cut -d':' -f3-)
                 # Vytvoří položku se zobrazeným číslem řádku a odkazem na konkrétní řádek v GitHubu
-                echo "- [ ] Line $line_number: [$content]($file#L$line_number)" >> TODO.md
+                echo "- [ ] [Line $line_number]($file#L$line_number): $content" >> TODO.md
               done
             done
           else
@@ -56,7 +56,7 @@ jobs:
                 line_number=$(echo "$line" | cut -d':' -f2)
                 content=$(echo "$line" | cut -d':' -f3-)
                 # Vytvoří položku se zobrazeným číslem řádku a odkazem na konkrétní řádek v GitHubu
-                echo "- [ ] Line $line_number: [$content]($file#L$line_number)" >> TODO.md
+                echo "- [ ] [Line $line_number]($file#L$line_number): $content" >> TODO.md
               done
             done
           else
