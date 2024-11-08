@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - main
-
+  workflow_dispatch:  # Umožní ruční spuštění workflow, pokud chcete akci spustit kdykoliv ručně
 jobs:
   generate-todo:
     runs-on: ubuntu-latest
