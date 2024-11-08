@@ -8,6 +8,7 @@ on:
     branches:
       - main
   workflow_dispatch:  # Umožní ruční spuštění workflow, pokud chcete akci spustit kdykoliv ručně
+
 jobs:
   generate-todo:
     runs-on: ubuntu-latest
@@ -49,12 +50,11 @@ jobs:
           fi
 
       - name: Commit and push TODO.md
-      run: |
-        git config --local user.name "github-actions[bot]"
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git add TODO.md
-        git commit -m "Update TODO.md with latest TODO and FIXME comments" || echo "No changes to commit"
-        git push --force
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add TODO.md
+          git commit -m "Update TODO.md with latest TODO and FIXME comments" || echo "No changes to commit"
+          git push --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
