@@ -18,41 +18,47 @@ jobs:
 
       - name: Find TODO and FIXME
         run: |
-          # Prohledá všechny soubory na TODO a uloží je do todos.tmp s cestou a číslem řádku
-          grep -rnw '.' -e "TODO" > todos.tmp || echo "No TODO found."
-          # Prohledá všechny soubory na FIXME a uloží je do fixmes.tmp s cestou a číslem řádku
-          grep -rnw '.' -e "FIXME" > fixmes.tmp || echo "No FIXME found."
+          # Najde všechny TODO a FIXME mimo adresáře začínající tečkou a mimo soubory .md
+          grep -rnw --exclude-dir=".*" --exclude="*.md" --exclude="*.tmp" '.' -e "TODO" > todos.tmp || echo "No TODO found."
+          grep -rnw --exclude-dir=".*" --exclude="*.md" --exclude="*.tmp" '.' -e "FIXME" > fixmes.tmp || echo "No FIXME found."
 
       - name: Generate TODO.md in Root
         run: |
           echo "# TODO and FIXME List" > TODO.md
           echo "" >> TODO.md
           
-          # Sekce TODO
-          echo "## TODO" >> TODO.md
+          # Sekce pro TODO
           if [ -s todos.tmp ]; then
-            while IFS= read -r line; do
-              file_path=$(echo "$line" | cut -d':' -f1)
-              line_number=$(echo "$line" | cut -d':' -f2)
-              content=$(echo "$line" | cut -d':' -f3-)
-              # Vloží odkaz na soubor a číslo řádku
-              echo "- [ ] [$file_path:$line_number]($file_path#L$line_number): $content" >> TODO.md
-            done < todos.tmp
+            echo "## TODO" >> TODO.md
+            awk -F':' '{print $1}' todos.tmp | sort | uniq | while read -r file; do
+              echo "" >> TODO.md
+              echo "### $file" >> TODO.md
+              grep "^$file" todos.tmp | while read -r line; do
+                line_number=$(echo "$line" | cut -d':' -f2)
+                content=$(echo "$line" | cut -d':' -f3-)
+                # Vytvoří položku se zobrazeným číslem řádku a odkazem na konkrétní řádek v GitHubu
+                echo "- [ ] Line $line_number: [$content]($file#L$line_number)" >> TODO.md
+              done
+            done
           else
             echo "No TODO comments found." >> TODO.md
           fi
+
           echo "" >> TODO.md
           
-          # Sekce FIXME
-          echo "## FIXME" >> TODO.md
+          # Sekce pro FIXME
           if [ -s fixmes.tmp ]; then
-            while IFS= read -r line; do
-              file_path=$(echo "$line" | cut -d':' -f1)
-              line_number=$(echo "$line" | cut -d':' -f2)
-              content=$(echo "$line" | cut -d':' -f3-)
-              # Vloží odkaz na soubor a číslo řádku
-              echo "- [ ] [$file_path:$line_number]($file_path#L$line_number): $content" >> TODO.md
-            done < fixmes.tmp
+            echo "## FIXME" >> TODO.md
+            awk -F':' '{print $1}' fixmes.tmp | sort | uniq | while read -r file; do
+              echo "" >> TODO.md
+              echo "### $file" >> TODO.md
+              grep "^$file" fixmes.tmp | while read -r line; do
+                line_number=$(echo "$line" | cut -d':' -f2)
+                content=$(echo "$line" | cut -d':' -f3-)
+                # Vytvoří položku se zobrazeným číslem řádku a odkazem na konkrétní řádek v GitHubu
+                echo "- [ ] Line $line_number: [$content]($file#L$line_number)" >> TODO.md
+              done
+            done
           else
             echo "No FIXME comments found." >> TODO.md
           fi
