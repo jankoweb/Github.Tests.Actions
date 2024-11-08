@@ -1,0 +1,59 @@
+name: Generate TODO.md
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  generate-todo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Find TODO and FIXME
+        run: |
+          # Prohledá všechny soubory na TODO a uloží je do todos.tmp
+          grep -rnw '.' -e "TODO" > todos.tmp || echo "No TODO found."
+          # Prohledá všechny soubory na FIXME a uloží je do fixmes.tmp
+          grep -rnw '.' -e "FIXME" > fixmes.tmp || echo "No FIXME found."
+
+      - name: Generate TODO.md
+        run: |
+          echo "# TODO and FIXME List" > TODO.md
+          echo "" >> TODO.md
+          
+          # Sekce TODO
+          echo "## TODO" >> TODO.md
+          if [ -s todos.tmp ]; then
+            cat todos.tmp | while read -r line; do
+              echo "- [ ] $line" >> TODO.md
+            done
+          else
+            echo "No TODO comments found." >> TODO.md
+          fi
+          echo "" >> TODO.md
+          
+          # Sekce FIXME
+          echo "## FIXME" >> TODO.md
+          if [ -s fixmes.tmp ]; then
+            cat fixmes.tmp | while read -r line; do
+              echo "- [ ] $line" >> TODO.md
+            done
+          else
+            echo "No FIXME comments found." >> TODO.md
+          fi
+
+      - name: Commit and push TODO.md
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add TODO.md
+          git commit -m "Update TODO.md with latest TODO and FIXME comments"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
