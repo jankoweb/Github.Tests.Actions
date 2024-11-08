@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:  # Umožní ruční spuštění workflow
+  workflow_dispatch:  # Allows manual triggering of the workflow
 
 jobs:
   generate-todo:
@@ -18,7 +18,7 @@ jobs:
 
       - name: Find TODO and FIXME
         run: |
-          # Najde všechny TODO a FIXME mimo adresáře začínající tečkou a mimo soubory .md
+          # Finds all TODO and FIXME outside directories starting with a dot and excluding .md files
           grep -rnw --exclude-dir=".git" --exclude-dir=".github" --exclude="*.md" --exclude="*.tmp" '.' -e "TODO" > todos.tmp || echo "No TODO found."
           grep -rnw --exclude-dir=".git" --exclude-dir=".github" --exclude="*.md" --exclude="*.tmp" '.' -e "FIXME" > fixmes.tmp || echo "No FIXME found."
 
@@ -27,7 +27,7 @@ jobs:
           echo "# TODO and FIXME List" > TODO.md
           echo "" >> TODO.md
           
-          # Sekce pro TODO
+          # Section for TODOs
           if [ -s todos.tmp ]; then
             echo "## TODO" >> TODO.md
             awk -F':' '{print $1}' todos.tmp | sort | uniq | while read -r file; do
@@ -36,7 +36,7 @@ jobs:
               grep "^$file" todos.tmp | while read -r line; do
                 line_number=$(echo "$line" | cut -d':' -f2)
                 content=$(echo "$line" | cut -d':' -f3-)
-                # Vytvoří položku se zobrazeným číslem řádku a odkazem na konkrétní řádek v GitHubu
+                # Creates an entry displaying the line number with a link to the specific line on GitHub
                 echo "- [ ] [Line $line_number]($file#L$line_number): $content" >> TODO.md
               done
             done
@@ -46,7 +46,7 @@ jobs:
 
           echo "" >> TODO.md
           
-          # Sekce pro FIXME
+          # Section for FIXMEs
           if [ -s fixmes.tmp ]; then
             echo "## FIXME" >> TODO.md
             awk -F':' '{print $1}' fixmes.tmp | sort | uniq | while read -r file; do
@@ -55,7 +55,7 @@ jobs:
               grep "^$file" fixmes.tmp | while read -r line; do
                 line_number=$(echo "$line" | cut -d':' -f2)
                 content=$(echo "$line" | cut -d':' -f3-)
-                # Vytvoří položku se zobrazeným číslem řádku a odkazem na konkrétní řádek v GitHubu
+                # Creates an entry displaying the line number with a link to the specific line on GitHub
                 echo "- [ ] [Line $line_number]($file#L$line_number): $content" >> TODO.md
               done
             done
