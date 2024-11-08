@@ -19,8 +19,8 @@ jobs:
       - name: Find TODO and FIXME
         run: |
           # Najde všechny TODO a FIXME mimo adresáře začínající tečkou a mimo soubory .md
-          grep -rnw --exclude-dir=".*" --exclude="*.md" --exclude="*.tmp" '.' -e "TODO" > todos.tmp || echo "No TODO found."
-          grep -rnw --exclude-dir=".*" --exclude="*.md" --exclude="*.tmp" '.' -e "FIXME" > fixmes.tmp || echo "No FIXME found."
+          grep -rnw --exclude-dir=".git" --exclude-dir=".github" --exclude="*.md" --exclude="*.tmp" '.' -e "TODO" > todos.tmp || echo "No TODO found."
+          grep -rnw --exclude-dir=".git" --exclude-dir=".github" --exclude="*.md" --exclude="*.tmp" '.' -e "FIXME" > fixmes.tmp || echo "No FIXME found."
 
       - name: Generate TODO.md in Root
         run: |
