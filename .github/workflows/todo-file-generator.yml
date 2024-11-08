@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:  # Umožní ruční spuštění workflow, pokud chcete akci spustit kdykoliv ručně
+  workflow_dispatch:  # Umožní ruční spuštění workflow
 
 jobs:
   generate-todo:
@@ -18,12 +18,12 @@ jobs:
 
       - name: Find TODO and FIXME
         run: |
-          # Prohledá všechny soubory na TODO a uloží je do todos.tmp
+          # Prohledá všechny soubory na TODO a uloží je do todos.tmp s cestou a číslem řádku
           grep -rnw '.' -e "TODO" > todos.tmp || echo "No TODO found."
-          # Prohledá všechny soubory na FIXME a uloží je do fixmes.tmp
+          # Prohledá všechny soubory na FIXME a uloží je do fixmes.tmp s cestou a číslem řádku
           grep -rnw '.' -e "FIXME" > fixmes.tmp || echo "No FIXME found."
 
-      - name: Generate TODO.md
+      - name: Generate TODO.md in Root
         run: |
           echo "# TODO and FIXME List" > TODO.md
           echo "" >> TODO.md
@@ -31,9 +31,13 @@ jobs:
           # Sekce TODO
           echo "## TODO" >> TODO.md
           if [ -s todos.tmp ]; then
-            cat todos.tmp | while read -r line; do
-              echo "- [ ] $line" >> TODO.md
-            done
+            while IFS= read -r line; do
+              file_path=$(echo "$line" | cut -d':' -f1)
+              line_number=$(echo "$line" | cut -d':' -f2)
+              content=$(echo "$line" | cut -d':' -f3-)
+              # Vloží odkaz na soubor a číslo řádku
+              echo "- [ ] [$file_path:$line_number]($file_path#L$line_number): $content" >> TODO.md
+            done < todos.tmp
           else
             echo "No TODO comments found." >> TODO.md
           fi
@@ -42,9 +46,13 @@ jobs:
           # Sekce FIXME
           echo "## FIXME" >> TODO.md
           if [ -s fixmes.tmp ]; then
-            cat fixmes.tmp | while read -r line; do
-              echo "- [ ] $line" >> TODO.md
-            done
+            while IFS= read -r line; do
+              file_path=$(echo "$line" | cut -d':' -f1)
+              line_number=$(echo "$line" | cut -d':' -f2)
+              content=$(echo "$line" | cut -d':' -f3-)
+              # Vloží odkaz na soubor a číslo řádku
+              echo "- [ ] [$file_path:$line_number]($file_path#L$line_number): $content" >> TODO.md
+            done < fixmes.tmp
           else
             echo "No FIXME comments found." >> TODO.md
           fi
@@ -55,13 +63,6 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git add TODO.md
           git commit -m "Update TODO.md with latest TODO and FIXME comments" || echo "No changes to commit"
-          git push --force --set-upstream origin main
+          git push --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Debug Git Status
-        run: |
-          git status
-          git remote -v
-
-
